@@ -20,7 +20,10 @@ This project demonstrates how to use a YOLOv8 model for object detection and Ope
 
 2. Install the Python dependencies:
     ```bash
-    pip install opencv-python-headless numpy torch ultralytics rclpy openai
+    pip3 install git+https://github.com/ultralytics/ultralytics.git@main
+    ```    
+    ```bash
+    pip3 install rclpy openai
     ```
 
 ### Llama API Key

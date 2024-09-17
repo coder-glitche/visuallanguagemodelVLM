@@ -46,6 +46,11 @@ This project demonstrates how to use a YOLOv8 model for object detection and Ope
     ```python
     yolo_model = YOLO('/path/to/your/yolo/best.pt')
     ```
+3. To train a custom model execute the following in your command line terminal
+    ```python
+     yolo detect train data='/path/to/data.yaml' model=yolov8n.pt epochs=100
+    ```
+    refer this [documentation](https://docs.ultralytics.com/usage/cli/) for all training and testing options
 
 
 ## How It Works

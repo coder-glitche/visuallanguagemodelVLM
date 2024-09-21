@@ -79,7 +79,7 @@ def get_center_of_bbox(bbox):
     return int((x_min + x_max) / 2), int((y_min + y_max) / 2)
 
 # Detect objects using YOLOv8 and detect colors
-from PIL import Image
+
 
 def detect_objects_and_colors(image_path):
     results = yolo_model(image_path)

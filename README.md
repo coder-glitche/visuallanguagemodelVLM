@@ -41,7 +41,7 @@ This project demonstrates how to use a YOLOv8 model for object detection and Ope
 
 ### YOLOv8 Model
 
-1. You need a trained YOLOv8 model for detecting colored balls and bowls find it [here](). 
+1. You need a trained YOLOv8 model for detecting colored balls and bowls find it [here](https://drive.google.com/drive/folders/1gAsdQNm0K3NSUy0tXdxVgrNoCsyYn3Fh?usp=sharing). 
 2. Place the trained YOLO model in the desired directory and update the path in the script:
     ```python
     yolo_model = YOLO('/path/to/your/yolo/best.pt')

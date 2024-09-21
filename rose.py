@@ -15,6 +15,8 @@ from std_msgs.msg import String
 # Set environment variable to use X11 instead of Wayland
 os.environ['QT_QPA_PLATFORM'] = 'xcb'
 
+
+
 # Load YOLO model
 yolo_model = YOLO('/home/yogesh/Downloads/results/train2/weights/best.pt')
 classify_model=YOLO('/home/yogesh/aaaaaaaaaaaaaaaaa/weights/best.pt')
@@ -156,6 +158,7 @@ def detect_color(image):
     return detected_color
 
 
+
 def yolo_classification_model(image):
     # Perform inference using YOLOv8 classification model
     results = classify_model.predict(image)
@@ -265,7 +268,7 @@ def execute_actions(actions, detected_objects, initial_positions, img_path, node
                     destination_center = detected_objects.get(destination_obj, None)
                     
                     # Temporarily store the source coordinates before updating
-                    # swap_temp_storage[(source_obj, destination_obj)] = source_initial_center
+                    swap_temp_storage[(source_obj, destination_obj)] = source_initial_center
 
         # Visualize action by drawing the arrow
         if source_initial_center and destination_center:
@@ -302,9 +305,10 @@ def execute_actions(actions, detected_objects, initial_positions, img_path, node
             detected_objects.update(detect_objects_and_colors(pather))
         else:
             print("ROS 2 node shutdown before receiving 'action done' message.")
-
+        
     # Close all OpenCV windows when done
     cv2.destroyAllWindows()
+    return pather
 
 
 
@@ -334,7 +338,7 @@ def main():
             for idx, action in enumerate(actions):
                 print(f"Action {idx + 1}: {action}")
             
-            execute_actions(actions, detected_objects, initial_positions, path0, node)
+            path0 = execute_actions(actions, detected_objects, initial_positions, path0, node)
     except KeyboardInterrupt:
         pass
     finally:

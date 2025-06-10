@@ -1,0 +1,94 @@
+port cv2
+import numpy as np
+from dbr import BarcodeReader
+
+# === CONFIGURATION ===
+IP_WEBCAM_URL = "http://192.168.74.171:8080/video"  # Replace with actual IP
+LICENSE_KEY = "t0082YQEAAGgkLiLhu1C6h6VPKkewDlpJRRSD6+MMeIcaknhTH1kSgo7pPp9s2jHiYnar6ohJ8NvcSIBhrhba+mDoqDdcJyb3TeN9MzJ7tGIHgnRHqg==;t0084YQEAACO9hWpIBcSvFbkER67aUFFjv2AmqYw/CoZqzYaDulvyiZqFaFTGaVbIkvrilixCI0bm99iqAd7yX6rv3JGpcr009X3T8L6pzKJoPAAEKUhI;t0083YQEAAH0LB0GuyOosyGib9UdO9u1BHiqk67tWqf3dJDYvXNjLDyGgjx2vta51as4q6QOP6/FilgTM84VhYRkmprfymAX075vC+6aXkh6NBwueSE8="
+
+# === INITIALIZE DBR ===
+reader = BarcodeReader()
+reader.init_license(LICENSE_KEY)
+
+# Configure barcode reading parameters
+try:
+    # Method 1: Try using template parameters (newer versions)
+    reader.set_parameters({
+        "ImageParameter": {
+            "BarcodeFormatIds": ["BF_ALL"],
+            "ExpectedBarcodesCount": 10,
+            "ScaleDownThreshold": 2300,
+            "LocalizationModes": [
+                {"Mode": "LM_CONNECTED_BLOCKS"}, 
+                {"Mode": "LM_SCAN_DIRECTLY"},
+                {"Mode": "LM_STATISTICS"}
+            ]
+        }
+    })
+except Exception as e:
+    print(f"Warning: Could not set advanced parameters: {e}")
+    # Fallback: Use basic configuration
+    try:
+        reader.set_mode_argument("BinarizationModes", 0, "EnableFillBinaryVacancy", "1")
+        reader.set_mode_argument("BinarizationModes", 0, "ThreshValueCoefficient", "10")
+    except:
+        print("Using default parameters")
+
+# === CAPTURE FROM IP CAMERA ===
+cap = cv2.VideoCapture(IP_WEBCAM_URL)
+if not cap.isOpened():
+    print("Failed to connect to the IP camera.")
+    print("Make sure:")
+    print("1. The IP camera app is running on your phone")
+    print("2. The IP address is correct")
+    print("3. Both devices are on the same network")
+    exit()
+
+print("Connected to camera. Press 'q' to quit.")
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        print("Failed to grab frame.")
+        break
+    
+    # Convert image to RGB for DBR (Dynamsoft expects RGB)
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
+    try:
+        # Decode barcodes
+        results = reader.decode_buffer(rgb_frame)
+        
+        if results:
+            print(f"Found {len(results)} barcode(s)")
+            for i, result in enumerate(results):
+                # Extract barcode text
+                barcode_text = result.barcode_text
+                print(f"Barcode {i+1}: {barcode_text}")
+                
+                # Draw bounding box
+                points = result.localization_result.localization_points
+                if len(points) >= 4:
+                    pts = np.array([[pt.x, pt.y] for pt in points], np.int32)
+                    pts = pts.reshape((-1, 1, 2))
+                    cv2.polylines(frame, [pts], True, (0, 255, 0), 2)
+                    
+                    # Add text label
+                    cv2.putText(frame, barcode_text, 
+                              (points[0].x, points[0].y - 10),
+                              cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+    
+    except Exception as e:
+        print(f"Error during barcode detection: {e}")
+    
+    # Display the frame
+    cv2.imshow("Barcode/QR/DataMatrix Detection", frame)
+    
+    # Break on 'q' key press
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+# Cleanup
+cap.release()
+cv2.destroyAllWindows()
+print("Camera released and windows closed.")
